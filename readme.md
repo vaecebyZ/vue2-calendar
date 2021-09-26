@@ -1,44 +1,66 @@
-# vue-baidu-calendar
-基于vue3实现的百度日历组件。宜忌算法尚未实现，欢迎pr。
+# vue-baidu-calendar-vue2
+forked from [027kaka/vue-baidu-calendar](https://github.com/027kaka/vue-baidu-calendar)
+
+原项目基于Vue3实现这边为了适应自己的环境，降低成vue2 并且移除antd依赖。
+
+基于vue2实现的百度日历组件。宜忌算法尚未实现，欢迎pr。
+
  ## 安装
+
+npm
+
+```bash
+$ npm install
+$ npm run serve
 ```
-$ npm install vue-baidu-calendar --save
+
+yarn 
+
+```bash
+$ yarn
+$ yarn serve
 ```
+
+
 
 ## 使用
-mian.js
-```js
-import { createApp } from 'vue'
-import App from './App.vue'
-import BaiduCalendar from "vue-baidu-calendar"
-const app=createApp(App)
-app.use(BaiduCalendar)
-app.mount('#app')
+把/src/componets/BaiduCalendar.vue和Utils直接拷贝到所需要的项目中。
 
-```
-App.vue
+HelloWorld.vue
+
 ``` html
 <template>
-<!-- 要给外层div指定合适的宽度 -->
-   <div style="width:600px;margin-top:16px;margin-left:16px">
-      <baidu-calendar @change="change" :date="date" :range="range"/>
+  <div>
+    <!-- 要给外层div指定合适的宽度 -->
+    <div style="width: 600px; margin-top: 16px; margin-left: 16px">
+      <baidu-calendar @change="change" :date="date" :range="range" />
+    </div>
   </div>
 </template>
 
-<script setup>
-import {  ref } from "vue";
-//date改变触发事件
-const change = (obj)=>{
-  console.log('obj',obj)
-}
-const date = ref("2021-1-27") //设置日期，若不设置，则默认为今天
-const range = [2015,2025] //设置年份范围 默认[2010,2030]
-
+<script>
+import baiduCalendar from "./BaiduCalendar";
+export default {
+  data() {
+    return {
+      date: "2021-1-27",
+      range: [2015,2025],
+    };
+  },
+  components: {
+    baiduCalendar,
+  },
+  methods: {
+    change(obj) {
+      console.log("obj", obj);
+    },
+  },
+};
 </script>
 
-<style></style>
-
+<style>
+</style>
 ```
 ## 演示
 
-![](./img/demo.png)
+![](./img/092219.png)

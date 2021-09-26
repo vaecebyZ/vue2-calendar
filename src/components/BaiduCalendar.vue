@@ -5,7 +5,7 @@
         <div class="op-calendar-pc-select-box" style="visibility: visible">
           <div class="op-calendar-pc-year-box">
             <Select
-              v-model:value="selectYear"
+              v-model="selectYear"
               style="width: 100px"
               @change="handleChange"
             >
@@ -20,7 +20,7 @@
           </div>
           <div class="op-calendar-pc-holiday-box">
             <Select
-              v-model:value="selectMonth"
+              v-model="selectMonth"
               style="width: 100px"
               @change="handleChangeMonth"
             >
@@ -63,8 +63,8 @@
                 <th class="op-calendar-pc-table-weekend">六</th>
                 <th class="op-calendar-pc-table-weekend">日</th>
               </tr>
-              <tr v-for="lineDateArray of fullDateArray">
-                <td v-for="item of lineDateArray" key="item.date">
+              <tr v-for="(lineDateArray,i) of fullDateArray" :key="i">
+                <td v-for="item of lineDateArray" :key="item.date">
                   <div class="op-calendar-pc-relative">
                     <a
                       href="javascript:void(0);"
@@ -117,7 +117,7 @@
         <p class="op-calendar-pc-right-holid1" v-if="dayInfo.festival">
           {{ dayInfo.festival }}
         </p>
-        <div
+        <!-- <div
           :class="{
             'op-calendar-pc-right-almanacbox': true,
             'op-calendar-pc-right-hover': hoverClass,
@@ -146,28 +146,20 @@
               ><i>忌</i>祈福、纳畜、经络、栽种、斋醮、词讼、置产</span
             >
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
     <div class="op-calendar-pc-holidaytip"></div>
   </div>
 </template>
 
-<script setup>
-import {
-  ref,
-  watch,
-  onMounted,
-  nextTick,
-  defineEmit,
-  defineProps,
-} from "vue";
+<script>
 import mGetDate from "./utils/mGetDate.js";
 import solarLunar from "./utils/solarLunar.js";
 // import { Select } from "ant-design-vue";
-import  Select  from "ant-design-vue/es/select/index.js";
-import  "ant-design-vue/es/select/style/index.css";
-const { Option } = Select;
+// import  Select  from "ant-design-vue/es/select/index.js";
+// import  "ant-design-vue/es/select/style/index.css";
+// const { Option } = Select;
 // import solarLunar from "solarlunar-es";
 import nextDay from "./utils/nextDay.js";
 import lastDay from "./utils/lastDay.js";
@@ -178,223 +170,243 @@ import {
   WORKING_DAYS,
   HOLIDAY,
 } from "./utils/lunarFestival.js";
-// 选中的日期
-const selectDayDate = ref("");
-const fullDateArray = ref([]);
-const emit = defineEmit(["change"]);
 
-const props = defineProps({
-  date: String,
-  range: {
-    type: Array,
-    default: [2010, 2030],
+export default {
+  name: "App",
+  data() {
+    return {
+      selectDayDate: {},
+      fullDateArray: [],
+      selectDay: {},
+      selectMonth: {},
+      selectYear: {},
+      yearsOptions: [],
+      monthOptions: [],
+      dayInfo: {},
+      hoverClass: false,
+      HOLIDAY: HOLIDAY,
+      solarLunar:solarLunar,
+      nextDay:nextDay,
+      lastDay:lastDay
+    };
   },
-});
-
-// 选中的日
-const selectDay = ref("");
-// 选中的月
-const selectMonth = ref("");
-// 选中的年
-const selectYear = ref("2021");
-const yearsOptions = [];
-let dayInfo = ref({});
-let time = new Date();
-dayInfo.value = solarLunar.solar2lunar(
-  time.getFullYear(),
-  time.getMonth() + 1,
-  time.getDate()
-);
-for (let i = props.range[0]; i < props.range[1]; i++) {
-  yearsOptions.push({
-    value: i,
-    text: i + "年",
-  });
-}
-const monthOptions = [];
-for (let i = 1; i <= 12; i++) {
-  monthOptions.push({
-    value: i,
-    text: i + "月",
-  });
-}
-const handleChange = (value) => {
-  selectYear.value = value;
-  selectDayDate.value = [
-    value,
-    selectDayDate.value.split("-")[1],
-    selectDayDate.value.split("-")[2],
-  ].join("-");
-  nextTick(generate);
-};
-const handleChangeMonth = (value) => {
-  selectMonth.value = value;
-  selectDayDate.value = [
-    selectDayDate.value.split("-")[0],
-    value,
-    selectDayDate.value.split("-")[2],
-  ].join("-");
-  nextTick(generate);
-};
-
-// calendar.solar2lunar(1987,11,01);
-const init = () => {
-  getDateToday();
-  if (props.date) {
-    selectDayDate.value = props.date;
-  }
-  generate();
-  //   0-6 7-12
-};
-//获取今天
-const getDateToday = () => {
-  let today = new Date();
-  let fullYear = today.getFullYear();
-  let month = today.getMonth() + 1;
-  let day = today.getDate();
-  selectDay.value = today;
-  selectYear.value = fullYear;
-  selectMonth.value = month;
-  selectDayDate.value = [fullYear, month, day].join("-");
-};
-const generate = () => {
-  let year = selectYear.value;
-  let month = selectMonth.value;
-  let day = 1;
-  let dayArr = [];
-  const DAY_LENTH = 42;
-  let startDay = new Date([year, month, day].join("-"));
-  let itemDay = [year, month, day].join("-");
-  let week = startDay.getDay();
-  week = week == 0 ? 7 : week;
-  // 开始push
-  for (let i = 1; i < week; i++) {
-    itemDay = lastDay(new Date(itemDay));
-    let { term, dayCn, monthCn, cDay, cMonth, cYear } = solarLunar.solar2lunar(
-      ...itemDay.split("-")
+  props: {
+    date: String,
+    range: {
+      type: Array,
+      default: () => [2010, 2030],
+    },
+  },
+  //初始化
+  mounted() {
+        let time = new Date();
+    this.dayInfo = this.solarLunar.solar2lunar(
+      time.getFullYear(),
+      time.getMonth() + 1,
+      time.getDate()
     );
-    if (FESTIVAL[cMonth] && FESTIVAL[cMonth][cDay]) {
-      term = FESTIVAL[cMonth][cDay];
+    for (let i = this.range[0]; i < this.range[1]; i++) {
+      this.yearsOptions.push({
+        value: i,
+        text: i + "年",
+      });
     }
+    for (let i = 1; i <= 12; i++) {
+      this.monthOptions.push({
+        value: i,
+        text: i + "月",
+      });
+    }
+    this.init();
+  },
+  methods: {
+    //监听selectDayDate选中日期
+    selectDayAction(e) {
+      const date = e.target.parentNode.getAttribute("date")
+        ? e.target.parentNode.getAttribute("date")
+        : e.target.getAttribute("date");
+      this.selectDayDate = date;
+    },
+    returnToday() {
+      this.getDateToday();
+    },
+    isHover() {
+      this.hoverClass = !this.hoverClass;
+    },
+    handleChangeDate(value) {
+      this.selectDayDate = value;
+    },
+    handleChange(value) {
+      this.selectYear = value;
+      this.selectDayDate = [
+        value,
+        this.selectDayDate.split("-")[1],
+        this.selectDayDate.split("-")[2],
+      ].join("-");
+      this.$nextTick(() => {
+        this.generate();
+      });
+    },
+    handleChangeMonth(value) {
+      this.selectMonth = value;
+      this.selectDayDate = [
+        this.selectDayDate.split("-")[0],
+        value,
+        this.selectDayDate.split("-")[2],
+      ].join("-");
+      this.$nextTick(() => {
+        this.generate();
+      });
+    },
 
-    if (LUNAR_FESTIVAL[monthCn] && LUNAR_FESTIVAL[monthCn][dayCn]) {
-      term = LUNAR_FESTIVAL[monthCn][dayCn];
-    }
-    let isWorkDay, isRestDay;
-    if (
-      WORKING_DAYS[cYear] &&
-      WORKING_DAYS[cYear][cMonth] &&
-      WORKING_DAYS[cYear][cMonth][cDay]
-    ) {
-      isWorkDay = true;
-    }
+    // calendar.solar2lunar(1987,11,01);
+    init() {
+      this.getDateToday();
+      if (this.date) {
+        this.selectDayDate = this.date;
+      }
+      this.generate();
+      //   0-6 7-12
+    },
+    //获取今天
+    getDateToday() {
+      let today = new Date();
+      let fullYear = today.getFullYear();
+      let month = today.getMonth() + 1;
+      let day = today.getDate();
+      this.selectDay = today;
+      this.selectYear = fullYear;
+      this.selectMonth = month;
+      this.selectDayDate = [fullYear, month, day].join("-");
+    },
+    generate() {
+      let year = this.selectYear;
+      let month = this.selectMonth;
+      let day = 1;
+      let dayArr = [];
+      const DAY_LENTH = 42;
+      let startDay = new Date([year, month, day].join("-"));
+      let itemDay = [year, month, day].join("-");
+      let week = startDay.getDay();
+      week = week == 0 ? 7 : week;
+      // 开始push
+      for (let i = 1; i < week; i++) {
+        itemDay = this.lastDay(new Date(itemDay));
+        let { term, dayCn, monthCn, cDay, cMonth, cYear } =
+          this.solarLunar.solar2lunar(...itemDay.split("-"));
+        if (FESTIVAL[cMonth] && FESTIVAL[cMonth][cDay]) {
+          term = FESTIVAL[cMonth][cDay];
+        }
 
-    if (ARRANGE_HOLIDAY[cYear] && ARRANGE_HOLIDAY[cYear][cMonth]) {
-      let range = ARRANGE_HOLIDAY[cYear][cMonth];
-      if (cDay >= range[0] && cDay <= range[1]) isRestDay = true;
-    }
+        if (LUNAR_FESTIVAL[monthCn] && LUNAR_FESTIVAL[monthCn][dayCn]) {
+          term = LUNAR_FESTIVAL[monthCn][dayCn];
+        }
+        let isWorkDay, isRestDay;
+        if (
+          WORKING_DAYS[cYear] &&
+          WORKING_DAYS[cYear][cMonth] &&
+          WORKING_DAYS[cYear][cMonth][cDay]
+        ) {
+          isWorkDay = true;
+        }
 
-    dayArr.push({
-      day: itemDay.split("-")[2],
-      date: itemDay,
-      d_day: term ? term : dayCn,
-      isSelectClass: selectDayDate.value == itemDay,
-      otherMonth: true,
-      hasTerm: term,
-      isWeekend:
-        (new Date(itemDay).getDay() == 6 || new Date(itemDay).getDay() == 0) &&
-        !isWorkDay,
-      isWorkDay: isWorkDay,
-      isRestDay: isRestDay,
-    });
-  }
-  itemDay = [year, month, day].join("-");
-  dayArr = dayArr.reverse();
-  for (let i = 0; i <= DAY_LENTH - week; i++) {
-    let { term, dayCn, monthCn, cMonth, cDay, cYear } = solarLunar.solar2lunar(
-      ...itemDay.split("-")
-    );
-    if (FESTIVAL[cMonth] && FESTIVAL[cMonth][cDay]) {
-      term = FESTIVAL[cMonth][cDay];
-    }
-    if (LUNAR_FESTIVAL[monthCn] && LUNAR_FESTIVAL[monthCn][dayCn]) {
-      term = LUNAR_FESTIVAL[monthCn][dayCn];
-    }
-    let isWorkDay, isRestDay;
-    if (
-      WORKING_DAYS[cYear] &&
-      WORKING_DAYS[cYear][cMonth] &&
-      WORKING_DAYS[cYear][cMonth][cDay]
-    ) {
-      isWorkDay = true;
-    }
+        if (ARRANGE_HOLIDAY[cYear] && ARRANGE_HOLIDAY[cYear][cMonth]) {
+          let range = ARRANGE_HOLIDAY[cYear][cMonth];
+          if (cDay >= range[0] && cDay <= range[1]) isRestDay = true;
+        }
 
-    if (ARRANGE_HOLIDAY[cYear] && ARRANGE_HOLIDAY[cYear][cMonth]) {
-      let range = ARRANGE_HOLIDAY[cYear][cMonth];
-      if (cDay >= range[0] && cDay <= range[1]) isRestDay = true;
-    }
-    dayArr.push({
-      date: itemDay,
-      day: itemDay.split("-")[2],
-      d_day: term ? term : dayCn,
-      isSelectClass: selectDayDate.value == itemDay,
-      otherMonth: itemDay.split("-")[1] != month,
-      hasTerm: term,
-      isWeekend:
-        (new Date(itemDay).getDay() == 6 || new Date(itemDay).getDay() == 0) &&
-        !isWorkDay,
-      isWorkDay: isWorkDay,
-      isRestDay: isRestDay,
-    });
-    itemDay = nextDay(new Date(itemDay));
-  }
-  //   清空原来的数据
-  fullDateArray.value = [];
-  for (let i = 0; i <= 5; i++) {
-    fullDateArray.value.push(dayArr.splice(0, 7));
-  }
-};
-//初始化
-onMounted(init);
-//监听selectDayDate选中日期
-watch(selectDayDate, (newValue) => {
-  selectYear.value = newValue.split("-")[0];
-  selectMonth.value = newValue.split("-")[1];
-  let info = solarLunar.solar2lunar(...newValue.split("-"));
-  dayInfo.value = {
-    lunarFestival: LUNAR_FESTIVAL[info.monthCn]
-      ? LUNAR_FESTIVAL[info.monthCn][info.dayCn]
-      : undefined,
-    festival: FESTIVAL[info.cMonth]
-      ? FESTIVAL[info.cMonth][info.cDay]
-      : undefined,
-    ...info,
-  };
-  //触发事件
-  emit("change", { date: newValue, ...dayInfo.value });
-  nextTick(generate);
-});
-const selectDayAction = (e) => {
-  const date = e.target.parentNode.getAttribute("date")
-    ? e.target.parentNode.getAttribute("date")
-    : e.target.getAttribute("date");
-  selectDayDate.value = date;
-};
-const returnToday = () => {
-  getDateToday();
-};
-const hoverClass = ref(false);
-const isHover = () => {
-  hoverClass.value = !hoverClass.value;
-};
-const handleChangeDate = (value) => {
-  selectDayDate.value = value;
+        dayArr.push({
+          day: itemDay.split("-")[2],
+          date: itemDay,
+          d_day: term ? term : dayCn,
+          isSelectClass: this.selectDayDate == itemDay,
+          otherMonth: true,
+          hasTerm: term,
+          isWeekend:
+            (new Date(itemDay).getDay() == 6 ||
+              new Date(itemDay).getDay() == 0) &&
+            !isWorkDay,
+          isWorkDay: isWorkDay,
+          isRestDay: isRestDay,
+        });
+      }
+      itemDay = [year, month, day].join("-");
+      dayArr = dayArr.reverse();
+      for (let i = 0; i <= DAY_LENTH - week; i++) {
+        let { term, dayCn, monthCn, cMonth, cDay, cYear } =
+          this.solarLunar.solar2lunar(...itemDay.split("-"));
+        if (FESTIVAL[cMonth] && FESTIVAL[cMonth][cDay]) {
+          term = FESTIVAL[cMonth][cDay];
+        }
+        if (LUNAR_FESTIVAL[monthCn] && LUNAR_FESTIVAL[monthCn][dayCn]) {
+          term = LUNAR_FESTIVAL[monthCn][dayCn];
+        }
+        let isWorkDay, isRestDay;
+        if (
+          WORKING_DAYS[cYear] &&
+          WORKING_DAYS[cYear][cMonth] &&
+          WORKING_DAYS[cYear][cMonth][cDay]
+        ) {
+          isWorkDay = true;
+        }
+
+        if (ARRANGE_HOLIDAY[cYear] && ARRANGE_HOLIDAY[cYear][cMonth]) {
+          let range = ARRANGE_HOLIDAY[cYear][cMonth];
+          if (cDay >= range[0] && cDay <= range[1]) isRestDay = true;
+        }
+        dayArr.push({
+          date: itemDay,
+          day: itemDay.split("-")[2],
+          d_day: term ? term : dayCn,
+          isSelectClass: this.selectDayDate == itemDay,
+          otherMonth: itemDay.split("-")[1] != month,
+          hasTerm: term,
+          isWeekend:
+            (new Date(itemDay).getDay() == 6 ||
+              new Date(itemDay).getDay() == 0) &&
+            !isWorkDay,
+          isWorkDay: isWorkDay,
+          isRestDay: isRestDay,
+        });
+        itemDay = this.nextDay(new Date(itemDay));
+      }
+      //   清空原来的数据
+      this.fullDateArray = [];
+      for (let i = 0; i <= 5; i++) {
+        this.fullDateArray.push(dayArr.splice(0, 7));
+      }
+      console.log(this.fullDateArray);
+    },
+  },
+  watch: {
+    selectDayDate(newValue) {
+      this.selectYear = newValue.split("-")[0];
+      this.selectMonth = newValue.split("-")[1];
+      let info = this.solarLunar.solar2lunar(...newValue.split("-"));
+      this.dayInfo = {
+        lunarFestival: LUNAR_FESTIVAL[info.monthCn]
+          ? LUNAR_FESTIVAL[info.monthCn][info.dayCn]
+          : undefined,
+        festival: FESTIVAL[info.cMonth]
+          ? FESTIVAL[info.cMonth][info.cDay]
+          : undefined,
+        ...info,
+      };
+      //触发事件
+      this.$emit("change", { date: newValue, ...this.dayInfo });
+      this.$nextTick(() => {
+        this.generate();
+      });
+    },
+  },
 };
 </script>
 
 <style>
-*, :after, :before {
-    box-sizing: border-box;
+*,
+:after,
+:before {
+  box-sizing: border-box;
 }
 .opui-scroll-ctrl-content {
   overflow: hidden;
