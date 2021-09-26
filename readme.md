@@ -2,8 +2,7 @@
 forked from [qiuquanwu/vue-baidu-calendar](https://github.com/qiuquanwu/vue-baidu-calendar)
 
 原项目基于Vue3实现这边为了适应自己的环境，降低成vue2 并且移除antd依赖。
-
-基于vue2实现的百度日历组件。宜忌算法尚未实现，欢迎pr。
+注意！该项目以我自己的需求为第一,并不一定适合您,里面可能存在屎山，pr需谨慎。
 
  ## 安装
 
