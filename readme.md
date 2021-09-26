@@ -1,5 +1,5 @@
 # vue-baidu-calendar-vue2
-forked from [027kaka/vue-baidu-calendar](https://github.com/027kaka/vue-baidu-calendar)
+forked from [qiuquanwu/vue-baidu-calendar](https://github.com/qiuquanwu/vue-baidu-calendar)
 
 原项目基于Vue3实现这边为了适应自己的环境，降低成vue2 并且移除antd依赖。
 
