@@ -312,7 +312,16 @@ export default {
 
         if (ARRANGE_HOLIDAY[cYear] && ARRANGE_HOLIDAY[cYear][cMonth]) {
           let range = ARRANGE_HOLIDAY[cYear][cMonth];
-          if (cDay >= range[0] && cDay <= range[1]) isRestDay = true;
+          if (cDay >= range[0] && cDay <= range[1]) {
+            isRestDay = true;
+          }
+          // 从下个月预览上个月
+          if (range[2]!= undefined && range[3]!= undefined) {
+            // 如果之后还有2位
+            if (cDay >= range[2] && cDay <= range[3]) {
+              isRestDay = true;
+            }
+          }
         }
 
         dayArr.push({
@@ -352,7 +361,16 @@ export default {
 
         if (ARRANGE_HOLIDAY[cYear] && ARRANGE_HOLIDAY[cYear][cMonth]) {
           let range = ARRANGE_HOLIDAY[cYear][cMonth];
-          if (cDay >= range[0] && cDay <= range[1]) isRestDay = true;
+          if (cDay >= range[0] && cDay <= range[1]) {
+            isRestDay = true;
+          }
+          // 从下个月预览上个月
+          if (range[2]!= undefined && range[3]!= undefined) {
+            // 如果之后还有2位
+            if (cDay >= range[2] && cDay <= range[3]) {
+              isRestDay = true;
+            }
+          }
         }
         dayArr.push({
           date: itemDay,
